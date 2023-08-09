@@ -1,6 +1,7 @@
 const db = require('../models');
 const user = db.Users;
 const position = db.Position;
+const token = db.Token;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -49,6 +50,11 @@ module.exports = {
             if (password !== confirmPassword) {
                 throw('Password not match')
             }
+            const checkToken = await token.findOne({where:{token:req.token}})
+            if (checkToken) {
+                throw{message: 'Link expired'}
+            }
+            await token.create({token:req.token})
             const salt = await bcrypt.genSalt(10);
             const hashPassword = await bcrypt.hash(password, salt);
             const result = await user.update({ fullname, password: hashPassword, birthdate },{where : {email: req.user.email}});
