@@ -41,7 +41,7 @@ module.exports = {
         try {
             const userId = req.user.id;
             const currentDate = new Date().toISOString().split('T')[0];
-            
+    
             const existingClockOut = await absen.findOne({
                 where: {
                     UserId: userId,
@@ -55,6 +55,34 @@ module.exports = {
                     status: false,
                 });
             }
+    
+            const clockInRecord = await absen.findOne({
+                where: {
+                    UserId: userId,
+                    date: currentDate,
+                    clockIn: true,
+                },
+            });
+    
+            if (!clockInRecord) {
+                return res.status(400).send({
+                    msg: "You haven't clocked in yet.",
+                    status: false,
+                });
+            }
+    
+            const clockInTime = new Date(clockInRecord.createdAt);
+            const clockOutTime = new Date();
+    
+            const timeDifferenceInHours = (clockOutTime - clockInTime) / (1000 * 60 * 60);
+    
+            if (timeDifferenceInHours < 8) {
+                return res.status(400).send({
+                    msg: "You cannot clock out before 8 hours have passed since clock-in.",
+                    status: false,
+                });
+            }
+    
             const result = await absen.update(
                 {
                     clockOut: true,
@@ -66,6 +94,7 @@ module.exports = {
                     },
                 }
             );
+    
             res.status(200).send({
                 result,
                 msg: "Success clock out",
