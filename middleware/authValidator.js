@@ -1,16 +1,19 @@
-const { body, validationResult, header } = require('express-validator')
+const {
+    body,
+    validationResult,
+    header
+} = require('express-validator')
 const jwt = require('jsonwebtoken');
 
 module.exports = {
-    checkAddWorker : async(req, res, next) => {
+    checkAddWorker: async (req, res, next) => {
         try {
             await body('email').notEmpty().withMessage("Email required").isEmail().run(req)
-            
+
             const validation = validationResult(req)
             if (validation.isEmpty()) {
                 next()
-            }
-            else{
+            } else {
                 return res.status(400).send({
                     status: false,
                     msg: 'Invalid validation',
@@ -22,7 +25,7 @@ module.exports = {
             res.status(400).send(err)
         }
     },
-    checkRegister : async(req,res,next) => {
+    checkRegister: async (req, res, next) => {
         try {
             await body('fullname').notEmpty().isAlphanumeric().withMessage("Fullname required").run(req)
             await body('birthdate').notEmpty().withMessage("Birthdate required").run(req)
@@ -33,12 +36,11 @@ module.exports = {
                 minNumbers: 1,
                 minSymbols: 1
             }).run(req)
-            await body ('confirmPassword').notEmpty().equals(req.body.password).withMessage("Password not match").run(req)
+            await body('confirmPassword').notEmpty().equals(req.body.password).withMessage("Password not match").run(req)
             const validation = validationResult(req)
             if (validation.isEmpty()) {
                 next()
-            }
-            else{
+            } else {
                 return res.status(400).send({
                     status: false,
                     msg: 'Invalid validation',
@@ -57,8 +59,7 @@ module.exports = {
             const validation = validationResult(req)
             if (validation.isEmpty()) {
                 next()
-            }
-            else{
+            } else {
                 return res.status(400).send({
                     status: false,
                     msg: 'Invalid validation',
@@ -70,15 +71,14 @@ module.exports = {
             res.status(400).send(err)
         }
     },
-    checkForgotPass : async(req, res, next) => {
+    checkForgotPass: async (req, res, next) => {
         try {
             await body('email').notEmpty().withMessage("Email required").isEmail().run(req)
-            
+
             const validation = validationResult(req)
             if (validation.isEmpty()) {
                 next()
-            }
-            else{
+            } else {
                 return res.status(400).send({
                     status: false,
                     msg: 'Invalid validation',
@@ -90,7 +90,7 @@ module.exports = {
             res.status(400).send(err)
         }
     },
-    checkResetPass : async (req, res, next) => {
+    checkResetPass: async (req, res, next) => {
         try {
             await header('authorization').notEmpty().withMessage("Token required").run(req)
             await body('password').notEmpty().isStrongPassword({
@@ -100,13 +100,12 @@ module.exports = {
                 minNumbers: 1,
                 minSymbols: 0
             }).run(req)
-            await body ('confirmPassword').notEmpty().equals(req.body.password).withMessage("Password not match").run(req)
+            await body('confirmPassword').notEmpty().equals(req.body.password).withMessage("Password not match").run(req)
 
             const validation = validationResult(req)
             if (validation.isEmpty()) {
                 next()
-            }
-            else{
+            } else {
                 return res.status(400).send({
                     status: false,
                     msg: 'Invalid validation',
@@ -118,14 +117,13 @@ module.exports = {
             res.status(400).send(err);
         }
     },
-    checkKeepLogin : async (req, res, next) => {
+    checkKeepLogin: async (req, res, next) => {
         try {
             await header('authorization').notEmpty().withMessage("Token required").run(req)
             const validation = validationResult(req)
             if (validation.isEmpty()) {
                 next()
-            }
-            else{
+            } else {
                 return res.status(400).send({
                     status: false,
                     msg: 'Invalid validation',

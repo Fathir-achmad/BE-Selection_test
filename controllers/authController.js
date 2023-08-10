@@ -12,20 +12,38 @@ const handlebars = require('handlebars');
 module.exports = {
     addWorker: async (req, res) => {
         try {
-            const { email, PositionId  } = req.body;
-            const emailExist = await user.findOne({ where: {email} });
+            const {
+                email,
+                PositionId
+            } = req.body;
+            const emailExist = await user.findOne({
+                where: {
+                    email
+                }
+            });
             if (emailExist) {
-                throw{message: 'Email has been used'}
+                throw {
+                    message: 'Email has been used'
+                }
             }
             // if (!emailExist.isAdmin) {
             //     throw{message: 'Admin only can add new workers'}
             // }
-            const result = await user.create({ email, PositionId });
+            const result = await user.create({
+                email,
+                PositionId
+            });
             const data = await fs.readFileSync('./template/verify.html', 'utf-8')
             const tempCompile = await handlebars.compile(data)
-            const payload = { email: email } //--- Bawa datanya
-            const token = jwt.sign(payload,process.env.KEY_JWT,{expiresIn: '1h'})
-            const tempResult = tempCompile({token: token})
+            const payload = {
+                email: email
+            } //--- Bawa datanya
+            const token = jwt.sign(payload, process.env.KEY_JWT, {
+                expiresIn: '1h'
+            })
+            const tempResult = tempCompile({
+                token: token
+            })
             await mailer.sendMail({
                 from: "fathir17.fa@gmail.com",
                 to: email,
@@ -46,18 +64,39 @@ module.exports = {
     },
     register: async (req, res) => {
         try {
-            const { fullname, password, confirmPassword, birthdate } = req.body;
+            const {
+                fullname,
+                password,
+                confirmPassword,
+                birthdate
+            } = req.body;
             if (password !== confirmPassword) {
-                throw('Password not match')
+                throw ('Password not match')
             }
-            const checkToken = await token.findOne({where:{token:req.token}})
+            const checkToken = await token.findOne({
+                where: {
+                    token: req.token
+                }
+            })
             if (checkToken) {
-                throw{message: 'Link expired'}
+                throw {
+                    message: 'Link expired'
+                }
             }
-            await token.create({token:req.token})
+            await token.create({
+                token: req.token
+            })
             const salt = await bcrypt.genSalt(10);
             const hashPassword = await bcrypt.hash(password, salt);
-            const result = await user.update({ fullname, password: hashPassword, birthdate },{where : {email: req.user.email}});
+            const result = await user.update({
+                fullname,
+                password: hashPassword,
+                birthdate
+            }, {
+                where: {
+                    email: req.user.email
+                }
+            });
 
             res.status(200).send({
                 status: true,
@@ -71,13 +110,28 @@ module.exports = {
     },
     login: async (req, res) => {
         try {
-            const { email, password } = req.body;
-            const checkLogin = await user.findOne({ where: { email } });
-            if (!checkLogin) throw { message: "User not found" };
+            const {
+                email,
+                password
+            } = req.body;
+            const checkLogin = await user.findOne({
+                where: {
+                    email
+                }
+            });
+            if (!checkLogin) throw {
+                message: "User not found"
+            };
             const isValid = await bcrypt.compare(password, checkLogin.password);
-            if (!isValid) throw { message: "Wrong password" };
-            const payload = { id: checkLogin.id };
-            const token = jwt.sign(payload, process.env.KEY_JWT, { expiresIn: '1d' });
+            if (!isValid) throw {
+                message: "Wrong password"
+            };
+            const payload = {
+                id: checkLogin.id
+            };
+            const token = jwt.sign(payload, process.env.KEY_JWT, {
+                expiresIn: '1d'
+            });
             res.status(200).send({
                 status: true,
                 message: "Login success",
@@ -104,13 +158,25 @@ module.exports = {
     },
     forgetPassword: async (req, res) => {
         try {
-            const result = await user.findOne({ where: { email: req.body.email }});
-            if (!result) throw { message: "Email not found" };
-            const payload = { email: req.body.email };
-            const token = jwt.sign(payload, process.env.KEY_JWT, { expiresIn: "1h" });
+            const result = await user.findOne({
+                where: {
+                    email: req.body.email
+                }
+            });
+            if (!result) throw {
+                message: "Email not found"
+            };
+            const payload = {
+                email: req.body.email
+            };
+            const token = jwt.sign(payload, process.env.KEY_JWT, {
+                expiresIn: "1h"
+            });
             const data = await fs.readFileSync('./src/resetPass.html', 'utf-8');
             const tempCompile = await handlebars.compile(data);
-            const tempResult = tempCompile({ token });
+            const tempResult = tempCompile({
+                token
+            });
             await mailer.sendMail({
                 from: process.env.TRANSPORTER_EMAIL,
                 to: req.body.email,
@@ -130,55 +196,71 @@ module.exports = {
         try {
             const salt = await bcrypt.genSalt(10);
             const hashPassword = await bcrypt.hash(req.body.password, salt);
-            const result = await user.update({ password: hashPassword }, {
-                where: { email: req.user.email }
+            const result = await user.update({
+                password: hashPassword
+            }, {
+                where: {
+                    email: req.user.email
+                }
             });
-            if (result[0] == 0) throw { message: "Password failed changed" };
-            res.status(200).send({ message: "Password changed successfully" });
+            if (result[0] == 0) throw {
+                message: "Password failed changed"
+            };
+            res.status(200).send({
+                message: "Password changed successfully"
+            });
         } catch (err) {
             console.log(err);
             res.status(400).send(err);
         };
     },
-    getEmployee: async (req,res) => {
+    getEmployee: async (req, res) => {
         try {
-          const condition = {isAdmin:false}
-          const total = await user.count({where: condition})
-          const result = await user.findAll({
-            include: [
-                {model: position,
-                    attributes:["position","fee"]
+            const condition = {
+                isAdmin: false
+            }
+            const total = await user.count({
+                where: condition
+            })
+            const result = await user.findAll({
+                include: [{
+                    model: position,
+                    attributes: ["position", "fee"]
                 }],
-            attributes:{exclude: ["password"]} ,where: condition})
-          res.status(200).send({
-            result,
-            status: true,
-          });
+                attributes: {
+                    exclude: ["password"]
+                },
+                where: condition
+            })
+            res.status(200).send({
+                result,
+                status: true,
+            });
         } catch (err) {
-          console.log(err);
-          res.status(400).send(err);
+            console.log(err);
+            res.status(400).send(err);
         }
-      },
-      addAvatar: async (req,res) => {
+    },
+    addAvatar: async (req, res) => {
         try {
             if (req.file.size > 1024 * 1024) throw {
                 status: false,
                 message: "file size to large"
             }
-          const result = await user.update({
-            imgProfile: req.file.filename
-        }, {
-            where: {
-                id: req.user.id
-            }
-        })
-          res.status(200).send({
-            result,
-            status: true,
-          });
+            const result = await user.update({
+                imgProfile: req.file.filename
+            }, {
+                where: {
+                    id: req.user.id
+                }
+            })
+            res.status(200).send({
+                result,
+                status: true,
+            });
         } catch (err) {
-          console.log(err);
-          res.status(400).send(err);
+            console.log(err);
+            res.status(400).send(err);
         }
-      },
+    },
 };

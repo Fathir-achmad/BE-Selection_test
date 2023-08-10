@@ -1,4 +1,4 @@
-const db = require('../models');
+const db = require("../models");
 const absen = db.Absen;
 
 module.exports = {
@@ -6,8 +6,8 @@ module.exports = {
         try {
             const currentTime = new Date();
             const userId = req.user.id;
-            const currentDate = currentTime.toISOString().split('T')[0];
-            
+            const currentDate = currentTime.toISOString().split("T")[0];
+
             const existingClockIn = await absen.findOne({
                 where: {
                     UserId: userId,
@@ -40,8 +40,8 @@ module.exports = {
     clockOut: async (req, res) => {
         try {
             const userId = req.user.id;
-            const currentDate = new Date().toISOString().split('T')[0];
-    
+            const currentDate = new Date().toISOString().split("T")[0];
+
             const existingClockOut = await absen.findOne({
                 where: {
                     UserId: userId,
@@ -55,7 +55,7 @@ module.exports = {
                     status: false,
                 });
             }
-    
+
             const clockInRecord = await absen.findOne({
                 where: {
                     UserId: userId,
@@ -63,38 +63,36 @@ module.exports = {
                     clockIn: true,
                 },
             });
-    
+
             if (!clockInRecord) {
                 return res.status(400).send({
                     msg: "You haven't clocked in yet.",
                     status: false,
                 });
             }
-    
+
             const clockInTime = new Date(clockInRecord.createdAt);
             const clockOutTime = new Date();
-    
-            const timeDifferenceInHours = (clockOutTime - clockInTime) / (1000 * 60 * 60);
-    
+
+            const timeDifferenceInHours =
+                (clockOutTime - clockInTime) / (1000 * 60 * 60);
+
             if (timeDifferenceInHours < 8) {
                 return res.status(400).send({
                     msg: "You cannot clock out before 8 hours have passed since clock-in.",
                     status: false,
                 });
             }
-    
-            const result = await absen.update(
-                {
-                    clockOut: true,
+
+            const result = await absen.update({
+                clockOut: true,
+            }, {
+                where: {
+                    UserId: userId,
+                    date: currentDate,
                 },
-                {
-                    where: {
-                        UserId: userId,
-                        date: currentDate,
-                    },
-                }
-            );
-    
+            });
+
             res.status(200).send({
                 result,
                 msg: "Success clock out",
@@ -106,15 +104,15 @@ module.exports = {
         }
     },
     arrival: async (req, res) => {
-        const currentDate = new Date().toISOString().split('T')[0];
-        const userId = req.user.id; 
+        const currentDate = new Date().toISOString().split("T")[0];
+        const userId = req.user.id;
         const condition = {
             date: currentDate,
             UserId: userId,
         };
         try {
             const result = await absen.findAll({
-                attributes: ['createdAt', 'updatedAt'],
+                attributes: ["createdAt", "updatedAt"],
                 where: condition,
             });
 
@@ -128,11 +126,15 @@ module.exports = {
         }
     },
     history: async (req, res) => {
-        const userId = req.user.id; 
+        const userId = req.user.id;
         try {
             const result = await absen.findAll({
-                where: { UserId: userId },
-                order: [['createdAt', 'DESC']],
+                where: {
+                    UserId: userId
+                },
+                order: [
+                    ["createdAt", "DESC"]
+                ],
             });
             res.status(200).send({
                 result,
@@ -143,5 +145,4 @@ module.exports = {
             res.status(400).send(error);
         }
     },
-    
 };

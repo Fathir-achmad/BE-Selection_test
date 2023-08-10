@@ -5,8 +5,7 @@ const position = db.Position;
 module.exports = {
     getPosition: async (req, res) => {
         try {
-            const result = await position.findAll({
-            });
+            const result = await position.findAll({});
             res.status(200).send({
                 result,
                 status: true,
@@ -19,14 +18,16 @@ module.exports = {
     calculateSalary: async (req, res) => {
         try {
             const results = await absen.findAll({
-                where: { UserId: req.user.id },
-                include: [
-                    {
-                        model: user,
-                        attributes: ["PositionId"],
-                        include: [{ model: position }],
-                    },
-                ],
+                where: {
+                    UserId: req.user.id
+                },
+                include: [{
+                    model: user,
+                    attributes: ["PositionId"],
+                    include: [{
+                        model: position
+                    }],
+                }, ],
             });
             const calculatedResults = results.map((result) => {
                 let fee = 0;
